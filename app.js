@@ -36,6 +36,7 @@ let a = 0;
 let interval_time = 20000;
 let symbol = " NIFTY";
 let jsonData;
+let finaldata;
 
 // Set up CORS options
 const corsOptions = {
