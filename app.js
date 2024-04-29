@@ -60,8 +60,21 @@ app.get('/', cors(corsOptions), async (req, res) => {
 });
 async function myfun() {
     try {
-        const response = await fetch("https://www.nseindia.com/api/option-chain-indices?symbol=NIFTY");
-        const data = await response.text();
+        const url = 'https://www.nseindia.com/api/option-chain-indices?symbol=NIFTY';
+        const response = await fetch(url, {
+            headers: {
+                'User-Agent': 'Mozilla/5.0', // Set a user agent to mimic a web browser request
+                'Accept': 'application/json', // Set Accept header to specify JSON response
+                'Referer': 'https://www.nseindia.com', // Set Referer header to indicate the source of the request
+            }
+        });
+        if (!response.ok) {
+            throw new Error('Failed to fetch data from NSE India API');
+        }
+        const data = await response.json();
+
+
+
         jsonData = JSON.parse(data);
 
         console.log(jsonData.records.timestamp);
@@ -215,8 +228,8 @@ async function myfun() {
         console.error('Error fetching data:', error);
     };
 
-
 }
+
 
 setInterval(() => {
 
