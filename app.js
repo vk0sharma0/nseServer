@@ -1,10 +1,11 @@
 
 const express = require('express');
 const cors = require('cors');
+const fs = require('fs');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-let time;
+let time = 0;
 let exdate;
 let currPrice;
 let tot_call_oi = 0;
@@ -32,11 +33,23 @@ let history_pcr = [];
 let history_call_rate = [];
 let history_put_rate = [];
 let timestamps = [];
+let call_tem = 0;
+let put_tem = 0;
+let history_call_vol_rate = [];
+let history_put_vol_rate = [];
 let a = 0;
+let b = 0;
+let c = 0;
+let d = 0;
+let x = 0;
 let interval_time = 20000;
 let symbol = " NIFTY";
 let jsonData;
 let finaldata;
+let z = true;
+let abc = 0;
+
+
 
 // Set up CORS options
 const corsOptions = {
@@ -51,7 +64,15 @@ const corsOptions = {
 // Set up route to proxy the NSE India API request
 app.get('/', cors(corsOptions), async (req, res) => {
     try {
-        res.send(finaldata);
+
+        fs.readFile('data.json', 'utf8', (err, data) => {
+            if (err) {
+                console.error('Error reading file:', err);
+                return;
+            }
+            console.log('File read successfully');
+            res.send(data);
+        });
 
     } catch (error) {
         console.error(error);
@@ -60,21 +81,9 @@ app.get('/', cors(corsOptions), async (req, res) => {
 });
 async function myfun() {
     try {
-        const url = 'https://www.nseindia.com/api/option-chain-indices?symbol=NIFTY';
-        const response = await fetch(url, {
-            headers: {
-                'User-Agent': 'Mozilla/5.0', // Set a user agent to mimic a web browser request
-                'Accept': 'application/json', // Set Accept header to specify JSON response
-                'Referer': 'https://www.nseindia.com', // Set Referer header to indicate the source of the request
-            }
-        });
-        if (!response.ok) {
-            throw new Error('Failed to fetch data from NSE India API');
-        }
-        const data = await response.json();
 
-
-
+        const response = await fetch("https://www.nseindia.com/api/option-chain-indices?symbol=NIFTY");
+        const data = await response.text();
         jsonData = JSON.parse(data);
 
         console.log(jsonData.records.timestamp);
@@ -107,68 +116,202 @@ async function myfun() {
 
             };
             //..................................................
-            if (a != tot_call_oi_change) {
-
+            abc++;
+            if (x != time) {
+                abc++;
+                console.log(abc);
                 timestamps.push(jsonData.records.timestamp.split(' ')[1].toString());
                 if (timestamps.length >= 20) {
                     timestamps.shift();
                 }
+                if (z) {
+                    timestamps.shift();
+
+                }
                 //..........................................................
+                if ((tot_call_volume - a) == 0) {
+                    history_tot_call_volume_diff.push(0);
 
+                }else if((tot_call_volume - a) != 0){
+                    tot_call_volume_diff = tot_call_volume - a;
+                    history_tot_call_volume_diff.push(tot_call_volume_diff);
+                    a = tot_call_volume;
+                    if (z) {
+    
+                        history_tot_call_volume_diff.shift();
+    
+    
+                    }
 
-                tot_call_volume_diff = tot_call_volume - tot_call_volume_diff;
-                tot_put_volume_diff = tot_put_volume - tot_put_volume_diff;
-                history_tot_call_volume_diff.push(tot_call_volume_diff);
+                };
+
+                if ((tot_put_volume - a) == 0) {
+                    history_tot_put_volume_diff.push(0);
+
+                }else if((tot_put_volume - a) != 0){
+                    tot_put_volume_diff = tot_put_volume - a;
+                    history_tot_put_volume_diff.push(tot_put_volume_diff);
+                    b = tot_put_volume;
+                    if (z) {
+    
+                        history_tot_put_volume_diff.shift();
+    
+    
+                    }
+
+                }; 
+                
                 if (history_tot_call_volume_diff.length > 20) {
                     history_tot_call_volume_diff.shift();
                 }
-                history_tot_put_volume_diff.push(tot_put_volume_diff);
                 if (history_tot_put_volume_diff.length > 20) {
                     history_tot_put_volume_diff.shift();
                 }
 
+                b = tot_put_volume;
+
+                history_tot_call_volume_diff.forEach(element => {
+                    call_tem = parseInt(call_tem) + parseInt(element);
+                });
+                history_call_vol_rate.push(call_tem);
+                if (history_call_vol_rate.length > 20) {
+                    history_call_rate.shift();
+                }
+                if (z) {
+
+                    history_call_rate.shift();
+
+
+                }
+                history_tot_put_volume_diff.forEach(element => {
+                    put_tem = parseInt(put_tem) + parseInt(element);
+                });
+                history_put_vol_rate.push(put_tem);
+                if (history_put_vol_rate.length > 20) {
+                    history_put_vol_rate.shift();
+                }
+                if (z) {
+
+                    history_put_vol_rate.shift();
+
+
+                }
+
+
 
                 //.........................................................
-                call_oi_change_diff = tot_call_oi_change - call_oi_change_diff;
-                put_oi_change_diff = tot_put_oi_change - put_oi_change_diff;
-                history_call_oi_change_diff.push(call_oi_change_diff);
-                if (history_call_oi_change_diff.length > 20) {
-                    history_call_oi_change_diff.shift();
-                };
-                history_put_oi_change_diff.push(put_oi_change_diff);
+
+                if ((tot_call_oi_change - c) == 0) {
+                    history_call_oi_change_diff.push(0);
+                } else if ((tot_call_oi_change - c) != 0) {
+                    call_oi_change_diff = tot_call_oi_change - c;
+                    history_call_oi_change_diff.push(call_oi_change_diff);
+                    c = tot_call_oi_change;
+                    if (z) {
+    
+    
+                        history_call_oi_change_diff.shift();
+    
+                    }
+                }
+                if ((tot_put_oi_change - c) == 0) {
+                    history_put_oi_change_diff.push(0);
+                } else if ((tot_put_oi_change - c) != 0) {
+
+                    put_oi_change_diff = tot_put_oi_change - d;
+                    history_put_oi_change_diff.push(put_oi_change_diff);
+                    d = tot_put_oi_change;
+                    if (z) {
+    
+    
+                        history_put_oi_change_diff.shift();
+    
+                    }
+                }
+
+                
                 if (history_put_oi_change_diff.length > 20) {
                     history_put_oi_change_diff.shift();
                 };
+                if (history_call_oi_change_diff.length > 20) {
+                    history_call_oi_change_diff.shift();
+                };
+
+
+
+
+
                 //.......................................................
 
                 history_call_oi_change.push(tot_call_oi_change);
                 if (history_call_oi_change.length > 20) {
                     history_call_oi_change.shift();
                 };
+                if (z) {
+
+                    history_call_oi_change.shift();
+
+
+                }
                 history_put_oi_change.push(tot_put_oi_change);
                 if (history_put_oi_change.length > 20) {
                     history_put_oi_change.shift();
                 };
+                if (z) {
+
+                    history_put_oi_change.shift();
+
+
+                }
+
                 //..................................................
 
                 history_tot_call_oi.push(tot_call_oi);
                 if (history_tot_call_oi.length > 20) {
                     history_tot_call_oi.shift();
                 };
+                if (z) {
+
+                    history_tot_call_oi.shift();
+
+
+                }
                 history_tot_put_oi.push(tot_put_oi);
                 if (history_tot_put_oi.length > 20) {
                     history_tot_put_oi.shift();
                 };
+                if (z) {
+
+                    history_tot_put_oi.shift();
+
+
+                }
                 //......................................................
-                call_rate = (call_oi_change_diff / 90).toString().split(".")[0];
+                history_call_oi_change_diff.forEach(element => {
+                    call_rate = parseInt(call_rate) + parseInt(element);
+                });
                 history_call_rate.push(call_rate);
                 if (history_call_rate.length > 20) {
                     history_call_rate.shift();
                 }
-                put_rate = (put_oi_change_diff / 90).toString().split(".")[0];
+                if (z) {
+
+
+                    history_call_rate.shift();
+
+                }
+                history_put_oi_change_diff.forEach(element => {
+                    put_rate = put_rate + element;
+                });
                 history_put_rate.push(put_rate);
                 if (history_put_rate.length > 20) {
                     history_put_rate.shift();
+                }
+                if (z) {
+
+
+                    history_put_rate.shift();
+
                 }
                 //....................................................
 
@@ -177,8 +320,15 @@ async function myfun() {
                 if (history_pcr.length > 20) {
                     history_pcr.shift();
                 }
+                if (z) {
 
-                a = tot_call_oi_change;
+
+                    history_pcr.shift();
+                    z = false;
+
+                }
+
+                x = time;
             };
 
             let mapdata =
@@ -204,8 +354,8 @@ async function myfun() {
                     "history_put_oi_change": history_put_oi_change,
                     "history_call_oi_change_diff": history_call_oi_change_diff,
                     "history_put_oi_change_diff": history_put_oi_change_diff,
-                    "history_tot_call_volume_diff": history_tot_call_volume_diff,
-                    "history_tot_put_volume_diff": history_tot_put_volume_diff,
+                    "history_tot_call_volume_diff": history_call_vol_rate,
+                    "history_tot_put_volume_diff": history_put_vol_rate,
                     "history_call_rate": history_call_rate,
                     "history_put_rate": history_put_rate,
                     "history_pcr": history_pcr,
@@ -217,7 +367,14 @@ async function myfun() {
 
 
             finaldata = JSON.stringify(mapdata);
-            console.log("Data fetched successfully", mapdata);
+            fs.writeFile('data.json', finaldata, 'utf8', (err) => {
+                if (err) {
+                    console.error('Error writing to file:', err);
+                    return;
+                }
+                console.log('Data has been written to file.');
+            });
+
             //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
@@ -228,8 +385,8 @@ async function myfun() {
         console.error('Error fetching data:', error);
     };
 
-}
 
+}
 
 setInterval(() => {
 
