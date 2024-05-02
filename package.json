@@ -1,4 +1,4 @@
-{
+{ "type":"module",
   "name": "nse-server",
   "version": "1.0.0",
   "description": "this is server setup to retrive data from nse and send api data",
@@ -12,6 +12,7 @@
   "dependencies": {
     "cors": "^2.8.5",
     "express": "^4.19.2",
+    "node-fetch": "^3.3.2",
     "nodemon": "^3.1.0"
   }
 }
