@@ -1,5 +1,4 @@
 {
-    "type": "module",
     "name": "nse-server",
     "version": "1.0.0",
     "description": "this is server setup to retrive data from nse and send api data",
