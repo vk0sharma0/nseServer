@@ -1,4 +1,5 @@
 
+import axios from 'axios';
 import express from 'express';
 import cors from 'cors';
 import fs from 'fs';
@@ -49,8 +50,14 @@ let jsonData;
 let finaldata;
 let z = true;
 let abc = 0;
-
-
+let vk = 0;
+setInterval(() => {
+    if (vk > (interval_time / 1000)) {
+        vk = 0;
+    }
+    console.log(vk);
+    vk++;
+}, 1000);
 
 // Set up CORS options
 const corsOptions = {
@@ -83,10 +90,21 @@ app.get('/', cors(corsOptions), async (req, res) => {
 async function myfun() {
     try {
 
-        const response = await fetch("https://www.nseindia.com/api/option-chain-indices?symbol=NIFTY");
-        const data = await response.text();
+      /*  const response = await axios.get("https://www.nseindia.com/api/option-chain-indices?symbol=NIFTY", {
+            headers: {
+                'User-Agent': 'Mozilla/5.0',
+                'Accept': 'application/json ,text/plain' ,
+                 'Accept-Encoding' : 'gzip, compress, deflate' 
+                
+                
+            }
+        });*/
+        
+         const response = await fetch("https://www.nseindia.com/api/option-chain-indices?symbol=NIFTY");
+         const data = await response.text();
+        
+        
         jsonData = JSON.parse(data);
-
         console.log(jsonData.records.timestamp);
 
         //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -133,35 +151,35 @@ async function myfun() {
                 if ((tot_call_volume - a) == 0) {
                     history_tot_call_volume_diff.push(0);
 
-                }else if((tot_call_volume - a) != 0){
+                } else if ((tot_call_volume - a) != 0) {
                     tot_call_volume_diff = tot_call_volume - a;
                     history_tot_call_volume_diff.push(tot_call_volume_diff);
                     a = tot_call_volume;
                     if (z) {
-    
+
                         history_tot_call_volume_diff.shift();
-    
-    
+
+
                     }
 
                 };
 
-                if ((tot_put_volume - a) == 0) {
+                if ((tot_put_volume - b) == 0) {
                     history_tot_put_volume_diff.push(0);
 
-                }else if((tot_put_volume - a) != 0){
-                    tot_put_volume_diff = tot_put_volume - a;
+                } else if ((tot_put_volume - b) != 0) {
+                    tot_put_volume_diff = tot_put_volume - b;
                     history_tot_put_volume_diff.push(tot_put_volume_diff);
                     b = tot_put_volume;
                     if (z) {
-    
+
                         history_tot_put_volume_diff.shift();
-    
-    
+
+
                     }
 
-                }; 
-                
+                };
+
                 if (history_tot_call_volume_diff.length > 20) {
                     history_tot_call_volume_diff.shift();
                 }
@@ -169,7 +187,7 @@ async function myfun() {
                     history_tot_put_volume_diff.shift();
                 }
 
-                b = tot_put_volume;
+                
 
                 history_tot_call_volume_diff.forEach(element => {
                     call_tem = parseInt(call_tem) + parseInt(element);
@@ -209,10 +227,10 @@ async function myfun() {
                     history_call_oi_change_diff.push(call_oi_change_diff);
                     c = tot_call_oi_change;
                     if (z) {
-    
-    
+
+
                         history_call_oi_change_diff.shift();
-    
+
                     }
                 }
                 if ((tot_put_oi_change - c) == 0) {
@@ -223,14 +241,14 @@ async function myfun() {
                     history_put_oi_change_diff.push(put_oi_change_diff);
                     d = tot_put_oi_change;
                     if (z) {
-    
-    
+
+
                         history_put_oi_change_diff.shift();
-    
+
                     }
                 }
 
-                
+
                 if (history_put_oi_change_diff.length > 20) {
                     history_put_oi_change_diff.shift();
                 };
@@ -368,6 +386,7 @@ async function myfun() {
 
 
             finaldata = JSON.stringify(mapdata);
+            console.log("here");
             fs.writeFile('data.json', finaldata, 'utf8', (err) => {
                 if (err) {
                     console.error('Error writing to file:', err);
@@ -376,6 +395,7 @@ async function myfun() {
                 console.log('Data has been written to file.');
             });
 
+            console.log("after");
             //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
@@ -387,7 +407,9 @@ async function myfun() {
     };
 
 
-}
+};
+
+myfun();
 
 setInterval(() => {
 
