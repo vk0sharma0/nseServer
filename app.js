@@ -100,7 +100,7 @@ async function myfun() {
             }
         });*/
         
-         const response = await fetch("https://www.nseindia.com/api/option-chain-indices?symbol=NIFTY",{headers: {
+         const response = await axios.fetch("https://www.nseindia.com/api/option-chain-indices?symbol=NIFTY",{headers: {
             'User-Agent': 'Mozilla/5.0',
             'Accept': 'application/json ,text/plain' ,
              'Accept-Encoding' : 'gzip, compress, deflate' 
