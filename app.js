@@ -42,7 +42,7 @@ let b = 0;
 let c = 0;
 let d = 0;
 let x = 0;
-let interval_time = 20000;
+let interval_time = 60000;
 let symbol = " NIFTY";
 let jsonData;
 let finaldata;
@@ -407,7 +407,7 @@ async function myfun() {
 
 
 
-myfun();
+
 
 setInterval(() => {
 
